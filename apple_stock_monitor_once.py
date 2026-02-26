@@ -52,7 +52,7 @@ def check_stock():
             response = requests.get(url, headers=HEADERS, timeout=10)
             if response.status_code == 200:
                 # 「在庫切れ」という文字列が含まれていないかチェック
-                if "在庫切れ" not in response.text and "現在ご利用いただけません" not in response.text:
+                if "在庫切れ" not in response.text:
                     print(f"[{datetime.now()}] {color}: 在庫あり！")
                     send_discord_notification(color, url)
                 else:
