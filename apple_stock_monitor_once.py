@@ -8,10 +8,10 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
 
 # 監視対象
 TARGETS = {
-    "デザートチタニウム": "https://www.apple.com/jp/shop/product/FYWJ3J/A/",
-    "ナチュラルチタニウム": "https://www.apple.com/jp/shop/product/FYWK3J/A/",
-    "ホワイトチタニウム": "https://www.apple.com/jp/shop/product/FYWH3J/A/",
-    "ブラックチタニウム": "https://www.apple.com/jp/shop/product/FYWG3J/A/"
+    "デザートチタニウム": "https://www.apple.com/jp/shop/product/fywj3j/a/iphone-16-pro-max-256gb-%E3%83%87%E3%82%B6%E3%83%BC%E3%83%88%E3%83%81%E3%82%BF%E3%83%8B%E3%82%A6%E3%83%A0-sim%E3%83%95%E3%83%AA%E3%83%BC%E6%95%B4%E5%82%99%E6%B8%88%E8%A3%BD%E5%93%81",
+    "ナチュラルチタニウム": "https://www.apple.com/jp/shop/product/fywk3j/a/iphone-16-pro-max-256gb-%E3%83%8A%E3%83%81%E3%83%A5%E3%83%A9%E3%83%AB%E3%83%81%E3%82%BF%E3%83%8B%E3%82%A6%E3%83%A0-sim%E3%83%95%E3%83%AA%E3%83%BC%E6%95%B4%E5%82%99%E6%B8%88%E8%A3%BD%E5%93%81",
+    "ホワイトチタニウム": "https://www.apple.com/jp/shop/product/fywh3j/a/iphone-16-pro-max-256gb-%E3%83%9B%E3%83%AF%E3%82%A4%E3%83%88%E3%83%81%E3%82%BF%E3%83%8B%E3%82%A6%E3%83%A0-sim%E3%83%95%E3%83%AA%E3%83%BC%E6%95%B4%E5%82%99%E6%B8%88%E8%A3%BD%E5%93%81",
+    "ブラックチタニウム": "https://www.apple.com/jp/shop/product/fywg3j/a/iphone-16-pro-max-256gb-%E3%83%96%E3%83%A9%E3%83%83%E3%82%AF%E3%83%81%E3%82%BF%E3%83%8B%E3%82%A6%E3%83%A0-sim%E3%83%95%E3%83%AA%E3%83%BC%E6%95%B4%E5%82%99%E6%B8%88%E8%A3%BD%E5%93%81"
 }
 
 HEADERS = {
