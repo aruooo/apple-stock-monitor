@@ -134,7 +134,10 @@ def check_stock(product: dict) -> tuple[bool | None, str]:
         soup = BeautifulSoup(html, "html.parser")
         for tag in soup.find_all("script", {"type": "application/ld+json"}):
             data = json.loads(tag.string or "{}")
-            avail = data.get("offers", {}).get("availability", "")
+            offers = data.get("offers", {})
+            if isinstance(offers, list):
+                offers = offers[0] if offers else {}
+            avail = offers.get("availability", "")
             if "InStock" in avail:
                 return True, f"在庫あり（JSON-LD: {avail}）"
             if "OutOfStock" in avail:
