@@ -86,7 +86,6 @@ def time_label() -> str:
 IN_STOCK_KEYWORDS = [
     "カートに入れる",
     "今すぐ購入",
-    "add-to-cart",          # HTML class/id
     '"availability":"InStock"',
     '"availability": "InStock"',
 ]
