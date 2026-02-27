@@ -1,0 +1,53 @@
+# ============================================================
+# 在庫監視 一時停止 / 再開
+# GitHub Actions の「Run workflow」ボタンから手動実行
+# ============================================================
+name: 監視 一時停止 / 再開
+
+on:
+  workflow_dispatch:
+    inputs:
+      paused:
+        description: '一時停止する（オフ = 再開）'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write  # リポジトリ変数の更新に必要
+
+    steps:
+      - name: STOCK_CHECK_PAUSED を更新
+        run: |
+          if [ "${{ github.event.inputs.paused }}" = "true" ]; then
+            VALUE="true"
+            LABEL="一時停止"
+          else
+            VALUE="false"
+            LABEL="再開"
+          fi
+
+          # PATCH（既存変数の更新）を試みる
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X PATCH \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d "{\"name\":\"STOCK_CHECK_PAUSED\",\"value\":\"$VALUE\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/variables/STOCK_CHECK_PAUSED")
+
+          # 変数が存在しない場合は POST（新規作成）
+          if [ "$STATUS" = "404" ]; then
+            curl -s \
+              -X POST \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -d "{\"name\":\"STOCK_CHECK_PAUSED\",\"value\":\"$VALUE\"}" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/variables"
+          fi
+
+          echo "✅ 在庫監視を${LABEL}しました（STOCK_CHECK_PAUSED = $VALUE）"
