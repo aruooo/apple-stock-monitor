@@ -2,7 +2,7 @@
 Apple 整備済製品 在庫チェッカー
 ================================
 監視対象: iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
-通知方法: Telegram Bot → iPhone
+通知方法: Discord Webhook
 
 時間帯別チェック間隔（GitHub Actions cron）:
   UTC 05:00-09:55  →  JST 14:00-18:55  :  5分間隔
@@ -147,34 +147,30 @@ def check_stock(product: dict) -> tuple[bool | None, str]:
 
 
 # ============================================================
-# Telegram 通知
+# Discord Webhook 通知
 # ============================================================
 
-def send_telegram(message: str) -> bool:
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+def send_discord_webhook(embeds: list) -> bool:
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL")
 
-    if not token or not chat_id:
-        print("⚠️  TELEGRAM_BOT_TOKEN または TELEGRAM_CHAT_ID が未設定です")
+    if not webhook_url:
+        print("⚠️  DISCORD_WEBHOOK_URL が未設定です")
         return False
 
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": False,
+        "username": "Apple 在庫モニター",
+        "embeds": embeds,
     }
     try:
-        r = requests.post(url, json=payload, timeout=10)
+        r = requests.post(webhook_url, json=payload, timeout=10)
         if r.ok:
-            print("✅ Telegram 通知送信成功")
+            print("✅ Discord 通知送信成功")
             return True
         else:
-            print(f"❌ Telegram エラー: {r.status_code} {r.text}")
+            print(f"❌ Discord エラー: {r.status_code} {r.text}")
             return False
     except Exception as e:
-        print(f"❌ Telegram 送信例外: {e}")
+        print(f"❌ Discord 送信例外: {e}")
         return False
 
 
@@ -207,7 +203,7 @@ def main():
     print("=" * 60)
 
     state = load_state()
-    notify_messages = []
+    notify_embeds = []
     changed = False
 
     # 4製品のHTTPリクエストを並列実行（I/Oバウンドのためスレッドで効果的）
@@ -227,13 +223,21 @@ def main():
 
         # 在庫あり かつ 前回は在庫なし/不明 → 新規入荷！
         if in_stock is True and prev is not True:
-            notify_messages.append(
-                f"🛒 <b>入荷しました！</b>\n"
-                f"{product['name']}\n"
-                f"<a href=\"{product['url']}\">今すぐ購入する</a>\n"
-                f"⏰ UTC: {u.strftime('%Y-%m-%d %H:%M:%S')}\n"
-                f"⏰ JST: {j.strftime('%Y-%m-%d %H:%M:%S')}"
-            )
+            notify_embeds.append({
+                "title": "🛒 入荷しました！",
+                "url": product["url"],
+                "description": (
+                    f"**{product['name']}**\n"
+                    f"[今すぐ購入する]({product['url']})"
+                ),
+                "color": 0x00C853,  # 緑
+                "footer": {
+                    "text": (
+                        f"UTC {u.strftime('%Y-%m-%d %H:%M:%S')} "
+                        f"/ JST {j.strftime('%Y-%m-%d %H:%M:%S')}"
+                    )
+                },
+            })
             state[key] = True
             changed = True
 
@@ -246,13 +250,8 @@ def main():
         elif in_stock is True:
             state[key] = True  # 継続在庫（通知不要）
 
-    if notify_messages:
-        header = (
-            f"🍎 <b>Apple 整備済製品 入荷アラート</b>\n"
-            f"({len(notify_messages)}件)\n\n"
-        )
-        full_msg = header + "\n\n".join(notify_messages)
-        send_telegram(full_msg)
+    if notify_embeds:
+        send_discord_webhook(notify_embeds)
     else:
         print("\n  📭 新規入荷なし（通知なし）")
 

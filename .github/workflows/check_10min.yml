@@ -16,6 +16,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    if: vars.STOCK_CHECK_PAUSED != 'true'
 
     steps:
       - name: リポジトリをチェックアウト
@@ -34,8 +35,7 @@ jobs:
 
       - name: 在庫チェック実行
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python check_stock.py
 
       - name: 状態ファイルをコミット（変化があった場合のみ）
