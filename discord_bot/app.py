@@ -34,6 +34,9 @@ DISCORD_PUBLIC_KEY = os.environ["DISCORD_PUBLIC_KEY"]
 GITHUB_TOKEN       = os.environ["GITHUB_TOKEN"]
 GITHUB_REPO        = os.environ["GITHUB_REPO"]  # "user/apple-stock-checker"
 
+# 起動時に一度だけ計算（リクエストごとの再生成を避ける）
+DISCORD_VERIFY_KEY = VerifyKey(bytes.fromhex(DISCORD_PUBLIC_KEY))
+
 GITHUB_VARIABLE_NAME = "STOCK_CHECK_PAUSED"
 GITHUB_API_BASE      = f"https://api.github.com/repos/{GITHUB_REPO}"
 
@@ -54,8 +57,7 @@ def verify_discord_signature():
     body       = request.data.decode("utf-8")
 
     try:
-        vk = VerifyKey(bytes.fromhex(DISCORD_PUBLIC_KEY))
-        vk.verify(f"{timestamp}{body}".encode(), bytes.fromhex(signature))
+        DISCORD_VERIFY_KEY.verify(f"{timestamp}{body}".encode(), bytes.fromhex(signature))
     except (BadSignatureError, Exception):
         abort(401)
 
@@ -66,10 +68,6 @@ def verify_discord_signature():
 def get_paused_value() -> str | None:
     url = f"{GITHUB_API_BASE}/actions/variables/{GITHUB_VARIABLE_NAME}"
     r = requests.get(url, headers=GH_HEADERS, timeout=10)
-    print(f"[DEBUG] GitHub GET status: {r.status_code}")
-    print(f"[DEBUG] GitHub GET body: {r.text}")
-    print(f"[DEBUG] GITHUB_REPO: {GITHUB_REPO}")
-    print(f"[DEBUG] TOKEN先頭10文字: {GITHUB_TOKEN[:10]}")
     if r.status_code == 200:
         return r.json().get("value", "false")
     return None

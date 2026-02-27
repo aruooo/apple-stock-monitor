@@ -10,6 +10,7 @@ Apple 整備済製品 在庫チェッカー
   UTC 15:00-18:00  →  JST 00:00-03:00  : 10分間隔
 """
 
+import concurrent.futures
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -209,9 +210,12 @@ def main():
     notify_messages = []
     changed = False
 
-    for product in PRODUCTS:
+    # 4製品のHTTPリクエストを並列実行（I/Oバウンドのためスレッドで効果的）
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        stock_results = list(executor.map(check_stock, PRODUCTS))
+
+    for product, (in_stock, reason) in zip(PRODUCTS, stock_results):
         key = product["id"]
-        in_stock, reason = check_stock(product)
         prev = state.get(key)  # True / False / None
 
         u = now_utc()
