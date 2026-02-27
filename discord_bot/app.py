@@ -64,9 +64,12 @@ def verify_discord_signature():
 # ============================================================
 
 def get_paused_value() -> str | None:
-    """現在の STOCK_CHECK_PAUSED の値を取得（"true" / "false" / None）"""
     url = f"{GITHUB_API_BASE}/actions/variables/{GITHUB_VARIABLE_NAME}"
     r = requests.get(url, headers=GH_HEADERS, timeout=10)
+    print(f"[DEBUG] GitHub GET status: {r.status_code}")
+    print(f"[DEBUG] GitHub GET body: {r.text}")
+    print(f"[DEBUG] GITHUB_REPO: {GITHUB_REPO}")
+    print(f"[DEBUG] TOKEN先頭10文字: {GITHUB_TOKEN[:10]}")
     if r.status_code == 200:
         return r.json().get("value", "false")
     return None
