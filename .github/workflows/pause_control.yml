@@ -7,13 +7,11 @@ name: 監視 一時停止 / 再開
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: '操作を選択'
+      paused:
+        description: '一時停止する（オフ = 再開）'
         required: true
-        type: choice
-        options:
-          - pause   # 一時停止
-          - resume  # 再開
+        type: boolean
+        default: false
 
 jobs:
   control:
@@ -24,7 +22,7 @@ jobs:
     steps:
       - name: STOCK_CHECK_PAUSED を更新
         run: |
-          if [ "${{ github.event.inputs.action }}" = "pause" ]; then
+          if [ "${{ github.event.inputs.paused }}" = "true" ]; then
             VALUE="true"
             LABEL="一時停止"
           else
