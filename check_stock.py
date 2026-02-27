@@ -3,11 +3,7 @@ Apple 整備済製品 在庫チェッカー
 ================================
 監視対象: iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
 通知方法: Discord Webhook
-
-時間帯別チェック間隔（GitHub Actions cron）:
-  UTC 05:00-09:55  →  JST 14:00-18:55  :  5分間隔
-  UTC 12:00-14:00  →  JST 21:00-23:00  : 15分間隔
-  UTC 15:00-18:00  →  JST 00:00-03:00  : 10分間隔
+チェック間隔: 毎5分・24時間（GitHub Actions）
 """
 
 import concurrent.futures
@@ -48,6 +44,9 @@ PRODUCTS = [
 ]
 
 STATE_FILE = "stock_state.json"
+
+# 連続N回判定不能でDiscordに警告通知
+FAILURE_ALERT_THRESHOLD = 3
 
 HEADERS = {
     "User-Agent": (
@@ -207,6 +206,7 @@ def main():
     state = load_state()
     notify_embeds = []
     changed = False
+    failure_counts = state.get("_failure_counts", {})
 
     # 4製品のHTTPリクエストを並列実行（I/Oバウンドのためスレッドで効果的）
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -241,16 +241,44 @@ def main():
                 },
             })
             state[key] = True
+            failure_counts[key] = 0
             changed = True
 
         # 在庫なし かつ 前回は在庫あり → 売り切れに変化
         elif in_stock is False and prev is True:
             state[key] = False
+            failure_counts[key] = 0
             changed = True
             print(f"      ℹ️ 在庫なしに変化（通知なし）")
 
         elif in_stock is True:
             state[key] = True  # 継続在庫（通知不要）
+            failure_counts[key] = 0
+
+        # 判定不能 → 連続失敗カウント
+        elif in_stock is None:
+            count = failure_counts.get(key, 0) + 1
+            failure_counts[key] = count
+            changed = True
+            if count == FAILURE_ALERT_THRESHOLD:
+                print(f"      🚨 連続{count}回判定不能 → Discord に警告通知")
+                notify_embeds.append({
+                    "title": "⚠️ 在庫チェック失敗",
+                    "url": product["url"],
+                    "description": (
+                        f"**{product['name']}**\n"
+                        f"連続 {count} 回判定不能です。\n"
+                        f"Apple のページ構造変更や Bot 検知の可能性があります。\n"
+                        f"最新エラー: `{reason}`"
+                    ),
+                    "color": 0xFF6D00,  # オレンジ
+                    "footer": {
+                        "text": (
+                            f"UTC {u.strftime('%Y-%m-%d %H:%M:%S')} "
+                            f"/ JST {j.strftime('%Y-%m-%d %H:%M:%S')}"
+                        )
+                    },
+                })
 
     if notify_embeds:
         send_discord_webhook(notify_embeds)
@@ -258,6 +286,7 @@ def main():
         print("\n  📭 新規入荷なし（通知なし）")
 
     if changed:
+        state["_failure_counts"] = failure_counts
         save_state(state)
         print(f"\n  💾 状態ファイル更新: {STATE_FILE}")
 

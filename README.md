@@ -132,7 +132,8 @@ apple-stock-checker/
 
 - 在庫なし → 在庫あり に変化したときだけ Discord に通知（連続通知しない）
 - 売り切れになっても通知なし（入荷通知のみ）
-- 状態は `stock_state.json` に保存し、Git にコミットして次回実行に引き継ぐ
+- 状態は `stock_state.json` に保存し、GitHub Actions Cache で次回実行に引き継ぐ
+- 判定不能が **3回連続** 続いた場合、⚠️ 警告を Discord に通知（ページ構造変更・Bot検知の早期発見）
 
 ---
 
@@ -156,9 +157,10 @@ Actions タブから「**監視 一時停止 / 再開**」ワークフローを�
 → Actions のログを確認。`DISCORD_WEBHOOK_URL` の設定ミスが多い。
 → `workflow_dispatch` で手動実行してログを確認
 
-**在庫判定が「判定不能」になる**
+**判定不能の Discord 通知が来た**
 → Apple がページ構造を変更した可能性あり。
 → `check_stock.py` の `IN_STOCK_KEYWORDS` / `OUT_OF_STOCK_KEYWORDS` を最新のページを見て更新してください。
+→ 3回連続で判定不能になると自動で通知されます（`FAILURE_ALERT_THRESHOLD` で変更可）。
 
 ---
 

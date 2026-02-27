@@ -1,6 +1,7 @@
 # ============================================================
 # 5分間隔チェック（24時間・365日）
 # パブリックリポジトリのため GitHub Actions 使用時間は無制限
+# 状態ファイルは Git commit ではなく Actions Cache で管理
 # ============================================================
 name: Stock Check - 5min (24h)
 
@@ -17,8 +18,14 @@ jobs:
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
+
+      - name: 状態ファイルを復元
+        uses: actions/cache/restore@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: stock_state.json
+          key: stock-state-${{ github.run_id }}
+          restore-keys: |
+            stock-state-
 
       - name: Python セットアップ
         uses: actions/setup-python@v5
@@ -34,10 +41,9 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python check_stock.py
 
-      - name: 状態ファイルをコミット（変化があった場合のみ）
-        run: |
-          git config user.name  "stock-bot"
-          git config user.email "stock-bot@noreply"
-          git add stock_state.json || true
-          git diff --cached --quiet || git commit -m "chore: update stock_state [skip ci]"
-          git push || true
+      - name: 状態ファイルをキャッシュに保存
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: stock_state.json
+          key: stock-state-${{ github.run_id }}
