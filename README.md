@@ -21,13 +21,9 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 
 ## チェック間隔
 
-| UTC時間帯 | JST時間帯 | 間隔 |
-|-----------|-----------|------|
-| 05:00 〜 09:55 | 14:00 〜 18:55 | **5分** |
-| 12:00 〜 14:00 | 21:00 〜 23:00 | **15分** |
-| 15:00 〜 18:00 | 00:00 〜 03:00 | **10分** |
+**24時間・毎5分**（時間帯制限なし）
 
-※ 上記以外の時間帯はチェックなし
+パブリックリポジトリのため GitHub Actions の使用時間は無制限です。
 
 ---
 
@@ -64,9 +60,7 @@ apple-stock-checker/
 ├── stock_state.json        ← 空ファイルでOK（後述）
 └── .github/
     └── workflows/
-        ├── check_5min.yml
-        ├── check_10min.yml
-        ├── check_15min.yml
+        ├── check_stock.yml
         └── pause_control.yml
 ```
 
@@ -116,9 +110,7 @@ apple-stock-checker/
 ├── stock_state.json         # 在庫状態の記録（自動更新）
 └── .github/
     └── workflows/
-        ├── check_5min.yml      # UTC 05-09 / JST 14-18 (5分)
-        ├── check_10min.yml     # UTC 15-18 / JST 00-03 (10分)
-        ├── check_15min.yml     # UTC 12-14 / JST 21-23 (15分)
+        ├── check_stock.yml     # 毎5分・24時間チェック
         └── pause_control.yml   # 監視の一時停止 / 再開
 ```
 
