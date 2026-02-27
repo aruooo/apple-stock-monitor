@@ -1,0 +1,49 @@
+# ============================================================
+# 5分間隔チェック
+# UTC 05:00-09:55  /  JST 14:00-18:55
+# ============================================================
+name: Stock Check - 5min (UTC05-09 / JST14-18)
+
+on:
+  schedule:
+    # UTC 05:00-09:55 を毎5分  ※GitHub Actions はUTC基準
+    # cron: "分 時 日 月 曜"
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 5 * * *"  # UTC 05:xx  (JST 14:xx)
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 6 * * *"  # UTC 06:xx  (JST 15:xx)
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 7 * * *"  # UTC 07:xx  (JST 16:xx)
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 8 * * *"  # UTC 08:xx  (JST 17:xx)
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 9 * * *"  # UTC 09:xx  (JST 18:xx)
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          # 状態ファイルをコミットするためトークンが必要
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 依存ライブラリのインストール
+        run: pip install requests beautifulsoup4
+
+      - name: 在庫チェック実行
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python check_stock.py
+
+      - name: 状態ファイルをコミット（変化があった場合のみ）
+        run: |
+          git config user.name  "stock-bot"
+          git config user.email "stock-bot@noreply"
+          git add stock_state.json || true
+          git diff --cached --quiet || git commit -m "chore: update stock_state [skip ci]"
+          git push || true
