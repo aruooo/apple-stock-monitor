@@ -1,9 +1,9 @@
-# 🍎 Apple 整備済製品 在庫チェッカー
+# Apple 整備済製品 在庫チェッカー
 
-iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監視し、  
-入荷した瞬間に **Telegram** でスマホへ通知します。
+iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監視し、
+入荷した瞬間に **Discord** で通知します。
 
-> **PCオフでも常時稼働** — GitHub Actions（無料）がクラウドで動くため、  
+> **PCオフでも常時稼働** — GitHub Actions（無料）がクラウドで動くため、
 > 自分のPCは一切不要です。
 
 ---
@@ -36,7 +36,7 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 | サービス | 費用 |
 |---------|------|
 | GitHub (Actions 含む) | **無料** (Public リポジトリ) |
-| Telegram Bot | **無料** |
+| Discord Webhook | **無料** |
 | 合計 | **¥0** |
 
 ---
@@ -60,12 +60,14 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 ```
 apple-stock-checker/
 ├── check_stock.py
+├── requirements.txt
 ├── stock_state.json        ← 空ファイルでOK（後述）
 └── .github/
     └── workflows/
         ├── check_5min.yml
         ├── check_10min.yml
-        └── check_15min.yml
+        ├── check_15min.yml
+        └── pause_control.yml
 ```
 
 **stock_state.json** は最初は空の `{}` を作成：
@@ -77,34 +79,23 @@ GitHub の画面から「Add file」→「Create new file」で各ファイル�
 
 ---
 
-### Step 3 — Telegram Bot を作成
+### Step 3 — Discord Webhook URL を取得
 
-1. iPhone の Telegram アプリを開く
-2. [@BotFather](https://t.me/BotFather) を検索して開く
-3. `/newbot` と送信
-4. Bot の名前を入力（例: `Apple Stock Checker`）
-5. Bot のユーザー名を入力（例: `apple_stock_abc123_bot`）← `_bot` で終わる必要あり
-6. 発行された **Bot Token** をコピー（例: `7123456789:AAFxxx...`）
-
-**Chat ID の取得：**
-1. 作成した Bot に `/start` と送信
-2. ブラウザで以下の URL を開く（`<TOKEN>` を置き換え）:
-   ```
-   https://api.telegram.org/bot<TOKEN>/getUpdates
-   ```
-3. 表示された JSON から `"id":` の数値をコピー（これが Chat ID）
+1. 通知を受け取りたい Discord サーバーのチャンネルを開く
+2. チャンネル名を右クリック →「**チャンネルの編集**」
+3. 「**連携サービス**」→「**ウェブフック**」→「**新しいウェブフック**」
+4. 名前を入力（例: `Apple 在庫モニター`）し、「**ウェブフック URLをコピー**」
 
 ---
 
 ### Step 4 — GitHub Secrets に登録
 
 1. GitHub リポジトリ → **Settings** → **Secrets and variables** → **Actions**
-2. 「**New repository secret**」で以下を2つ追加：
+2. 「**New repository secret**」で以下を追加：
 
 | Name | Value |
 |------|-------|
-| `TELEGRAM_BOT_TOKEN` | BotFather から発行されたトークン |
-| `TELEGRAM_CHAT_ID`   | 上で確認した数値のID |
+| `DISCORD_WEBHOOK_URL` | Discord でコピーした Webhook URL |
 
 ---
 
@@ -121,36 +112,61 @@ GitHub の画面から「Add file」→「Create new file」で各ファイル�
 ```
 apple-stock-checker/
 ├── check_stock.py           # メインスクリプト
+├── requirements.txt         # 依存ライブラリ
 ├── stock_state.json         # 在庫状態の記録（自動更新）
 └── .github/
     └── workflows/
-        ├── check_5min.yml   # UTC 05-09 / JST 14-18 (5分)
-        ├── check_10min.yml  # UTC 15-18 / JST 00-03 (10分)
-        └── check_15min.yml  # UTC 12-14 / JST 21-23 (15分)
+        ├── check_5min.yml      # UTC 05-09 / JST 14-18 (5分)
+        ├── check_10min.yml     # UTC 15-18 / JST 00-03 (10分)
+        ├── check_15min.yml     # UTC 12-14 / JST 21-23 (15分)
+        └── pause_control.yml   # 監視の一時停止 / 再開
 ```
+
+---
+
+## 在庫判定の仕組み
+
+1. **日本語キーワード検索** — `カートに入れる` 等が HTML に含まれるか確認
+2. **JSON-LD 解析** — `<script type="application/ld+json">` の `offers.availability` を確認
+   - `InStock` → 在庫あり
+   - `OutOfStock` → 在庫なし
+3. どちらでも判定できない場合は「判定不能」としてログに記録（通知なし）
+
+> JSON-LD はサーバーサイドで出力されるため、JavaScript 実行に依存しない確実な判定源です。
 
 ---
 
 ## 通知の仕組み
 
-- 在庫なし → 在庫あり に変化したときだけ通知（連続通知しない）
+- 在庫なし → 在庫あり に変化したときだけ Discord に通知（連続通知しない）
 - 売り切れになっても通知なし（入荷通知のみ）
 - 状態は `stock_state.json` に保存し、Git にコミットして次回実行に引き継ぐ
 
 ---
 
+## 監視の一時停止 / 再開
+
+Actions タブから「**監視 一時停止 / 再開**」ワークフローを手動実行：
+
+- チェックボックスをオンにして実行 → **一時停止**
+- チェックボックスをオフにして実行 → **再開**
+
+内部的には GitHub Actions のリポジトリ変数 `STOCK_CHECK_PAUSED` を更新します。
+
+---
+
 ## トラブルシューティング
 
-**Actions が動かない**  
+**Actions が動かない**
 → Settings → Actions → General → 「Allow all actions」になっているか確認
 
-**通知が来ない**  
-→ Actions のログを確認。Secrets の設定ミスが多い。  
+**通知が来ない**
+→ Actions のログを確認。`DISCORD_WEBHOOK_URL` の設定ミスが多い。
 → `workflow_dispatch` で手動実行してログを確認
 
-**在庫判定が「判定不能」になる**  
-→ Apple がページ構造を変更した可能性あり。  
-→ `check_stock.py` の `IN_STOCK_KEYWORDS` を最新のページを見て更新してください。
+**在庫判定が「判定不能」になる**
+→ Apple がページ構造を変更した可能性あり。
+→ `check_stock.py` の `IN_STOCK_KEYWORDS` / `OUT_OF_STOCK_KEYWORDS` を最新のページを見て更新してください。
 
 ---
 
