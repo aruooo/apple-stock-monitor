@@ -57,16 +57,10 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 apple-stock-checker/
 ├── check_stock.py
 ├── requirements.txt
-├── stock_state.json        ← 空ファイルでOK（後述）
 └── .github/
     └── workflows/
         ├── check_stock.yml
         └── pause_control.yml
-```
-
-**stock_state.json** は最初は空の `{}` を作成：
-```json
-{}
 ```
 
 GitHub の画面から「Add file」→「Create new file」で各ファイルを貼り付けてもOKです。
@@ -107,12 +101,14 @@ GitHub の画面から「Add file」→「Create new file」で各ファイル�
 apple-stock-checker/
 ├── check_stock.py           # メインスクリプト
 ├── requirements.txt         # 依存ライブラリ
-├── stock_state.json         # 在庫状態の記録（自動更新）
 └── .github/
     └── workflows/
         ├── check_stock.yml     # 毎5分・24時間チェック
         └── pause_control.yml   # 監視の一時停止 / 再開
 ```
+
+> `stock_state.json`（在庫状態の記録）はリポジトリには含まれません。
+> GitHub Actions Cache で実行間引き継がれます。
 
 ---
 
@@ -122,7 +118,7 @@ apple-stock-checker/
 2. **JSON-LD 解析** — `<script type="application/ld+json">` の `offers.availability` を確認
    - `InStock` → 在庫あり
    - `OutOfStock` → 在庫なし
-3. どちらでも判定できない場合は「判定不能」としてログに記録（通知なし）
+3. どちらでも判定できない場合は「判定不能」としてログに記録（3回連続で Discord に警告通知）
 
 > JSON-LD はサーバーサイドで出力されるため、JavaScript 実行に依存しない確実な判定源です。
 
