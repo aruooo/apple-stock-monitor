@@ -1,0 +1,45 @@
+# ============================================================
+# 15分間隔チェック
+# UTC 12:00-14:00  /  JST 21:00-23:00
+# ============================================================
+name: Stock Check - 15min (UTC12-14 / JST21-23)
+
+on:
+  schedule:
+    # UTC 12:00-14:00 を毎15分
+    - cron: "0,15,30,45 12 * * *"  # UTC 12:xx  (JST 21:xx)
+    - cron: "0,15,30,45 13 * * *"  # UTC 13:xx  (JST 22:xx)
+    - cron: "0 14 * * *"           # UTC 14:00  (JST 23:00)
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 依存ライブラリのインストール
+        run: pip install requests beautifulsoup4
+
+      - name: 在庫チェック実行
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python check_stock.py
+
+      - name: 状態ファイルをコミット（変化があった場合のみ）
+        run: |
+          git config user.name  "stock-bot"
+          git config user.email "stock-bot@noreply"
+          git add stock_state.json || true
+          git diff --cached --quiet || git commit -m "chore: update stock_state [skip ci]"
+          git push || true
