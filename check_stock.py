@@ -3,7 +3,7 @@ Apple 整備済製品 在庫チェッカー
 ================================
 監視対象: iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
 通知方法: Discord Webhook
-チェック間隔: 毎5分・24時間（GitHub Actions）
+チェック間隔: 毎1分・24時間（GitHub Actions）
 """
 
 import concurrent.futures
