@@ -2,13 +2,17 @@
 # 5分間隔チェック（24時間・365日）
 # パブリックリポジトリのため GitHub Actions 使用時間は無制限
 # 状態ファイルは Git commit ではなく Actions Cache で管理
+#
+# トリガー設計:
+#   主: cron-job.org が毎5分 workflow_dispatch を API 経由で起動
+#   副: GitHub schedule（毎時）が cron-job.org 障害時のフォールバック
 # ============================================================
 name: Stock Check - 5min (24h)
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # 毎5分・全時間帯
-  workflow_dispatch: # 手動実行も可能
+    - cron: "0 * * * *"  # 毎時0分（cron-job.org 障害時フォールバック）
+  workflow_dispatch: # cron-job.org が API 経由でトリガー
 
 jobs:
   check:

@@ -23,6 +23,11 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 
 **24時間・毎5分**（時間帯制限なし）
 
+| トリガー | 役割 | 間隔 |
+|---------|------|------|
+| cron-job.org → `workflow_dispatch` | **主トリガー**（精確） | 毎5分 |
+| GitHub `schedule` | フォールバック | 毎時 |
+
 パブリックリポジトリのため GitHub Actions の使用時間は無制限です。
 
 ---
@@ -95,6 +100,62 @@ GitHub の画面から「Add file」→「Create new file」で各ファイル�
 
 ---
 
+### Step 6 — cron-job.org で正確な5分間隔を設定
+
+> GitHub の `schedule:` cron は数分〜数十分の遅延が発生します。
+> **cron-job.org** を使うと外部から毎5分 API を叩き、確実に実行できます。
+
+#### 6-1. GitHub Personal Access Token (PAT) を発行
+
+1. GitHub → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+2. 「**Generate new token (classic)**」
+3. Note: `apple-stock-monitor cron` など任意の名前
+4. Expiration: 任意（`No expiration` 推奨）
+5. Scope: **`workflow`** にチェック
+6. 「**Generate token**」→ 表示されたトークンをコピー（一度しか表示されません）
+
+#### 6-2. cron-job.org にジョブを登録
+
+1. [cron-job.org](https://cron-job.org) でアカウント作成（無料）
+2. 「**CREATE CRONJOB**」をクリック
+3. 以下の通り設定：
+
+| 項目 | 値 |
+|------|-----|
+| Title | `Apple Stock Monitor` |
+| URL | `https://api.github.com/repos/【GitHubユーザー名】/【リポジトリ名】/actions/workflows/check_stock.yml/dispatches` |
+| Execution schedule | **Every 5 minutes** |
+| Request method | **POST** |
+
+4. 「**ADVANCED**」を開き、以下を設定：
+
+**Request headers:**
+```
+Authorization: Bearer 【Step 6-1 でコピーした PAT】
+Accept: application/vnd.github+json
+Content-Type: application/json
+```
+
+**Request body:**
+```json
+{"ref":"main"}
+```
+
+5. 「**CREATE**」で保存
+
+#### 6-3. 動作確認
+
+- cron-job.org ダッシュボードで「**Test run**」を押して HTTP 204 が返れば成功
+- GitHub Actions タブで新しいジョブが起動したことを確認
+
+---
+
+> **トリガー設計の全体像**
+> cron-job.org（毎5分）が**主トリガー**、GitHub `schedule`（毎時）が**フォールバック**です。
+> cron-job.org が一時的にダウンしても、最長1時間以内に自動回復します。
+
+---
+
 ## ディレクトリ構成
 
 ```
@@ -162,6 +223,7 @@ Actions タブから「**監視 一時停止 / 再開**」ワークフローを�
 
 ## ⚠️ 注意事項
 
-- GitHub Actions の cron は**数分程度の遅延**が発生することがあります（保証なし）
+- GitHub Actions の `schedule` cron は数分〜数十分の遅延が発生します（保証なし）。cron-job.org を使うことで精確な5分間隔を実現します
 - Apple がBot検知（Cloudflare 等）を強化した場合、HTTPリクエストがブロックされることがあります
 - 不正アクセス・過剰アクセスとならないよう、最短5分間隔にしています
+- cron-job.org の PAT はリポジトリの `workflow` を起動する権限を持つため、適切に管理してください
