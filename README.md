@@ -21,11 +21,11 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 
 ## チェック間隔
 
-**24時間・毎5分**（時間帯制限なし）
+**24時間・毎1分**（時間帯制限なし）
 
 | トリガー | 役割 | 間隔 |
 |---------|------|------|
-| cron-job.org → `workflow_dispatch` | **主トリガー**（精確） | 毎5分 |
+| cron-job.org → `workflow_dispatch` | **主トリガー**（精確） | 毎1分 |
 | GitHub `schedule` | フォールバック | 毎時 |
 
 パブリックリポジトリのため GitHub Actions の使用時間は無制限です。
@@ -100,10 +100,10 @@ GitHub の画面から「Add file」→「Create new file」で各ファイル�
 
 ---
 
-### Step 6 — cron-job.org で正確な5分間隔を設定
+### Step 6 — cron-job.org で正確な1分間隔を設定
 
 > GitHub の `schedule:` cron は数分〜数十分の遅延が発生します。
-> **cron-job.org** を使うと外部から毎5分 API を叩き、確実に実行できます。
+> **cron-job.org** を使うと外部から毎1分 API を叩き、確実に実行できます。
 
 #### 6-1. GitHub Personal Access Token (PAT) を発行
 
@@ -124,7 +124,7 @@ GitHub の画面から「Add file」→「Create new file」で各ファイル�
 |------|-----|
 | Title | `Apple Stock Monitor` |
 | URL | `https://api.github.com/repos/【GitHubユーザー名】/【リポジトリ名】/actions/workflows/check_stock.yml/dispatches` |
-| Execution schedule | **Every 5 minutes** |
+| Execution schedule | **Every 1 minute** |
 | Request method | **POST** |
 
 4. 「**ADVANCED**」を開き、以下を設定：
@@ -151,7 +151,7 @@ Content-Type: application/json
 ---
 
 > **トリガー設計の全体像**
-> cron-job.org（毎5分）が**主トリガー**、GitHub `schedule`（毎時）が**フォールバック**です。
+> cron-job.org（毎1分）が**主トリガー**、GitHub `schedule`（毎時）が**フォールバック**です。
 > cron-job.org が一時的にダウンしても、最長1時間以内に自動回復します。
 
 ---
@@ -164,7 +164,7 @@ apple-stock-checker/
 ├── requirements.txt         # 依存ライブラリ
 └── .github/
     └── workflows/
-        ├── check_stock.yml     # 毎5分・24時間チェック
+        ├── check_stock.yml     # 毎1分・24時間チェック
         └── pause_control.yml   # 監視の一時停止 / 再開
 ```
 
@@ -227,7 +227,7 @@ apple-stock-checker/
 
 ## ⚠️ 注意事項
 
-- GitHub Actions の `schedule` cron は数分〜数十分の遅延が発生します（保証なし）。cron-job.org を使うことで精確な5分間隔を実現します
+- GitHub Actions の `schedule` cron は数分〜数十分の遅延が発生します（保証なし）。cron-job.org を使うことで精確な1分間隔を実現します
 - Apple がBot検知（Cloudflare 等）を強化した場合、HTTPリクエストがブロックされることがあります
-- 不正アクセス・過剰アクセスとならないよう、最短5分間隔にしています
+- 不正アクセス・過剰アクセスとならないよう、最短1分間隔にしています
 - cron-job.org の PAT はリポジトリの `workflow` を起動する権限を持つため、適切に管理してください
