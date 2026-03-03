@@ -1,7 +1,11 @@
 """
 Apple 整備済製品 在庫チェッカー
 ================================
-監視対象: iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
+監視対象:
+  - iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
+  - iPhone 16 Pro 128GB (SIMフリー) 整備済製品 4色
+  - iPhone 16 Plus 128GB (SIMフリー) 整備済製品 4色
+  - iPhone 16 128GB (SIMフリー) 整備済製品 6色
 通知方法: Discord Webhook
 チェック間隔: 毎1分・24時間（GitHub Actions）
 """
@@ -21,6 +25,7 @@ from datetime import datetime, timezone, timedelta
 JST = timezone(timedelta(hours=9))
 
 PRODUCTS = [
+    # ── iPhone 16 Pro Max 256GB ─────────────────────────────
     {
         "id": "FYWH3J",
         "name": "iPhone 16 Pro Max 256GB - ホワイトチタニウム（SIMフリー）[整備済製品]",
@@ -40,6 +45,64 @@ PRODUCTS = [
         "id": "FYWG3J",
         "name": "iPhone 16 Pro Max 256GB - ブラックチタニウム（SIMフリー）[整備済製品]",
         "url": "https://www.apple.com/jp/xc/product/FYWG3J/A",
+    },
+    # ── iPhone 16 Pro 128GB ──────────────────────────────────
+    {
+        "id": "FYMW3J",
+        "name": "iPhone 16 Pro 128GB - ホワイトチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYMW3J/A",
+    },
+    {
+        "id": "FYMX3J",
+        "name": "iPhone 16 Pro 128GB - デザートチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYMX3J/A",
+    },
+    {
+        "id": "FYMY3J",
+        "name": "iPhone 16 Pro 128GB - ナチュラルチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYMY3J/A",
+    },
+    {
+        "id": "FYDR3J",
+        "name": "iPhone 16 Pro 128GB - ブラックチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYDR3J/A",
+    },
+    # ── iPhone 16 Plus 128GB ─────────────────────────────────
+    {
+        "id": "FXVF3J",
+        "name": "iPhone 16 Plus 128GB - ティール（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FXVF3J/A",
+    },
+    {
+        "id": "FXVE3J",
+        "name": "iPhone 16 Plus 128GB - ウルトラマリン（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FXVE3J/A",
+    },
+    {
+        "id": "FXVC3J",
+        "name": "iPhone 16 Plus 128GB - ホワイト（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FXVC3J/A",
+    },
+    # ── iPhone 16 128GB ──────────────────────────────────────
+    {
+        "id": "FYDV3J",
+        "name": "iPhone 16 128GB - ティール（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYDV3J/A",
+    },
+    {
+        "id": "FYDU3J",
+        "name": "iPhone 16 128GB - ウルトラマリン（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYDU3J/A",
+    },
+    {
+        "id": "FYDT3J",
+        "name": "iPhone 16 128GB - ピンク（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYDT3J/A",
+    },
+    {
+        "id": "FYDQ3J",
+        "name": "iPhone 16 128GB - ブラック（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYDQ3J/A",
     },
 ]
 
@@ -208,7 +271,7 @@ def main():
     changed = False
     failure_counts = state.get("_failure_counts", {})
 
-    # 4製品のHTTPリクエストを並列実行（I/Oバウンドのためスレッドで効果的）
+    # 全製品のHTTPリクエストを並列実行（I/Oバウンドのためスレッドで効果的）
     with concurrent.futures.ThreadPoolExecutor() as executor:
         stock_results = list(executor.map(check_stock, PRODUCTS))
 
