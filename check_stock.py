@@ -3,9 +3,9 @@ Apple 整備済製品 在庫チェッカー
 ================================
 監視対象:
   - iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
-  - iPhone 16 Pro 128GB (SIMフリー) 整備済製品 3色
+  - iPhone 16 Pro 128GB (SIMフリー) 整備済製品 4色
   - iPhone 16 Plus 128GB (SIMフリー) 整備済製品 4色
-  - iPhone 16 128GB (SIMフリー) 整備済製品 5色
+  - iPhone 16 128GB (SIMフリー) 整備済製品 4色
 通知方法: Discord Webhook
 チェック間隔: 毎1分・24時間（GitHub Actions）
 """
@@ -62,6 +62,11 @@ PRODUCTS = [
         "name": "iPhone 16 Pro 128GB - ナチュラルチタニウム（SIMフリー）[整備済製品]",
         "url": "https://www.apple.com/jp/xc/product/FYMY3J/A",
     },
+    {
+        "id": "FYMV3J",
+        "name": "iPhone 16 Pro 128GB - ブラックチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYMV3J/A",
+    },
     # ── iPhone 16 Plus 128GB ─────────────────────────────────
     {
         "id": "FXVF3J",
@@ -93,11 +98,6 @@ PRODUCTS = [
         "id": "FYDU3J",
         "name": "iPhone 16 128GB - ウルトラマリン（SIMフリー）[整備済製品]",
         "url": "https://www.apple.com/jp/xc/product/FYDU3J/A",
-    },
-    {
-        "id": "FYDT3J",
-        "name": "iPhone 16 128GB - ピンク（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYDT3J/A",
     },
     {
         "id": "FYDQ3J",
