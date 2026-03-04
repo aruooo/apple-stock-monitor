@@ -1,6 +1,6 @@
 # Apple 整備済製品 在庫チェッカー
 
-iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監視し、
+以下の整備済製品（計16製品）の入荷を自動監視し、
 入荷した瞬間に **Discord** で通知します。
 
 > **PCオフでも常時稼働** — GitHub Actions（無料）がクラウドで動くため、
@@ -10,12 +10,41 @@ iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色の入荷を自動監
 
 ## 監視対象
 
+### iPhone 16 Pro Max 256GB（SIMフリー）整備済製品
+
 | カラー | SKU | URL |
 |--------|-----|-----|
 | ホワイトチタニウム | FYWH3J | https://www.apple.com/jp/xc/product/FYWH3J/A |
 | デザートチタニウム | FYWJ3J | https://www.apple.com/jp/xc/product/FYWJ3J/A |
 | ナチュラルチタニウム | FYWK3J | https://www.apple.com/jp/xc/product/FYWK3J/A |
 | ブラックチタニウム | FYWG3J | https://www.apple.com/jp/xc/product/FYWG3J/A |
+
+### iPhone 16 Pro 128GB（SIMフリー）整備済製品
+
+| カラー | SKU | URL |
+|--------|-----|-----|
+| ホワイトチタニウム | FYMW3J | https://www.apple.com/jp/xc/product/FYMW3J/A |
+| デザートチタニウム | FYMX3J | https://www.apple.com/jp/xc/product/FYMX3J/A |
+| ナチュラルチタニウム | FYMY3J | https://www.apple.com/jp/xc/product/FYMY3J/A |
+| ブラックチタニウム | FYMV3J | https://www.apple.com/jp/xc/product/FYMV3J/A |
+
+### iPhone 16 Plus 128GB（SIMフリー）整備済製品
+
+| カラー | SKU | URL |
+|--------|-----|-----|
+| ティール | FXVF3J | https://www.apple.com/jp/xc/product/FXVF3J/A |
+| ウルトラマリン | FXVE3J | https://www.apple.com/jp/xc/product/FXVE3J/A |
+| ホワイト | FXVC3J | https://www.apple.com/jp/xc/product/FXVC3J/A |
+| ブラック | FXVA3J | https://www.apple.com/jp/xc/product/FXVA3J/A |
+
+### iPhone 16 128GB（SIMフリー）整備済製品
+
+| カラー | SKU | URL |
+|--------|-----|-----|
+| ティール | FYDV3J | https://www.apple.com/jp/xc/product/FYDV3J/A |
+| ウルトラマリン | FYDU3J | https://www.apple.com/jp/xc/product/FYDU3J/A |
+| ブラック | FYDQ3J | https://www.apple.com/jp/xc/product/FYDQ3J/A |
+| ホワイト | FYDR3J | https://www.apple.com/jp/xc/product/FYDR3J/A |
 
 ---
 
