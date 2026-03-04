@@ -353,10 +353,11 @@ def main():
         print(f"  {symbol} [{ts}] {product['name']}")
         print(f"      → {reason}")
 
-        # 在庫あり かつ 前回は在庫なし/不明 → 新規入荷！
-        if in_stock is True and prev is not True:
+        # 在庫あり → 毎回通知
+        if in_stock is True:
+            label = "🛒 入荷しました！" if prev is not True else "🛒 引き続き在庫あり"
             notify_embeds.append({
-                "title": "🛒 入荷しました！",
+                "title": label,
                 "url": product["url"],
                 "description": (
                     f"**{product['name']}**\n"
@@ -381,14 +382,14 @@ def main():
             changed = True
             print(f"      ℹ️ 在庫なしに変化（通知なし）")
 
-        elif in_stock is True:
-            state[key] = True  # 継続在庫（通知不要）
-            failure_counts[key] = 0
-
-        # 判定不能 → 連続失敗カウント
+        # 判定不能 → 連続失敗カウント + state の詰まり防止
         elif in_stock is None:
             count = failure_counts.get(key, 0) + 1
             failure_counts[key] = count
+            # True のまま放置すると「在庫あり→判定不能→在庫あり」時に
+            # prev=True になり通知が届かなくなるためリセット
+            if prev is True:
+                state[key] = None
             changed = True
             if count == FAILURE_ALERT_THRESHOLD:
                 print(f"      🚨 連続{count}回判定不能 → Discord に警告通知")
