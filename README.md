@@ -188,9 +188,10 @@ Content-Type: application/json
 ## ディレクトリ構成
 
 ```
-apple-stock-checker/
+apple-stock-monitor/
 ├── check_stock.py           # メインスクリプト
 ├── requirements.txt         # 依存ライブラリ
+├── .gitignore
 └── .github/
     └── workflows/
         ├── check_stock.yml     # 毎1分・24時間チェック
@@ -204,11 +205,18 @@ apple-stock-checker/
 
 ## 在庫判定の仕組み
 
-1. **日本語キーワード検索** — `カートに入れる` 等が HTML に含まれるか確認
+全製品のチェックは並列実行（スレッドプール）し、1回のワークフロー実行でまとめて取得します。
+
+各製品の判定フロー：
+
+1. **日本語キーワード検索** — HTML に以下が含まれるか確認
+   - 在庫あり: `カートに入れる` / `今すぐ購入` / `ショッピングバッグに入れる` / `add-to-cart`
+   - 在庫なし: `現在ご注文いただけません` / `在庫がありません` / `売り切れ` / `このアイテムは現在ご利用いただけません`
 2. **JSON-LD 解析** — `<script type="application/ld+json">` の `offers.availability` を確認
-   - `InStock` → 在庫あり
-   - `OutOfStock` → 在庫なし
-3. どちらでも判定できない場合は「判定不能」としてログに記録（3回連続で Discord に警告通知）
+   - ドキュメントがリスト形式でも対応、`offers` が複数ある場合は全件チェック
+   - `InStock` → 在庫あり、`OutOfStock` → 在庫なし
+3. **リトライ** — 上記で判定不能な場合、5秒後に再取得して再判定（一時的な応答異常をカバー）
+4. それでも判定不能な場合は「判定不能」としてログに記録（3回連続で Discord に警告通知）
 
 > JSON-LD はサーバーサイドで出力されるため、JavaScript 実行に依存しない確実な判定源です。
 
