@@ -153,6 +153,8 @@ def time_label() -> str:
 IN_STOCK_KEYWORDS = [
     "カートに入れる",
     "今すぐ購入",
+    "ショッピングバッグに入れる",
+    "add-to-cart",
     '"availability":"InStock"',
     '"availability": "InStock"',
 ]
@@ -162,32 +164,62 @@ OUT_OF_STOCK_KEYWORDS = [
     "現在ご注文いただけません",
     "在庫がありません",
     "売り切れ",
+    "このアイテムは現在ご利用いただけません",
     '"availability":"OutOfStock"',
     '"availability": "OutOfStock"',
 ]
 
 
-def check_stock(product: dict) -> tuple[bool | None, str]:
+def _parse_jsonld_availability(html: str) -> bool | None:
     """
-    Returns:
-        (True, reason)  : 在庫あり
-        (False, reason) : 在庫なし
-        (None, reason)  : 判定不能 / エラー
+    JSON-LD の offers.availability を全 script タグ・全 offers から確認する。
+    True: 在庫あり / False: 在庫なし / None: 判定不能
+    エラーは握り潰さずに呼び出し元でログ出力できるよう例外を伝搬する。
     """
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup.find_all("script", {"type": "application/ld+json"}):
+        try:
+            data = json.loads(tag.string or "{}")
+        except json.JSONDecodeError:
+            continue
+
+        # JSON-LD 自体がリスト形式の場合を処理
+        items = data if isinstance(data, list) else [data]
+
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            offers = item.get("offers", {})
+            # offers がリストの場合は全件チェック（先頭だけでなく）
+            offer_list = offers if isinstance(offers, list) else [offers]
+            for offer in offer_list:
+                if not isinstance(offer, dict):
+                    continue
+                avail = offer.get("availability", "")
+                if "InStock" in avail:
+                    return True
+                if "OutOfStock" in avail:
+                    return False
+    return None
+
+
+def _fetch_html(product: dict) -> tuple[str | None, str]:
+    """HTTP GET して HTML を返す。失敗時は (None, エラー理由)。"""
     try:
         resp = requests.get(product["url"], headers=HEADERS, timeout=15)
     except requests.RequestException as e:
         return None, f"接続エラー: {e}"
 
-    # 404 → 商品ページ自体が存在しない（在庫なし扱い）
     if resp.status_code == 404:
-        return False, "404 Not Found（ページ非公開）"
-
+        return None, "404 Not Found（ページ非公開）"
     if resp.status_code != 200:
         return None, f"HTTP {resp.status_code}"
 
-    html = resp.text
+    return resp.text, ""
 
+
+def _judge_html(html: str) -> tuple[bool | None, str]:
+    """HTML から在庫を判定する。"""
     for kw in IN_STOCK_KEYWORDS:
         if kw in html:
             return True, f"在庫あり（キーワード: {kw}）"
@@ -196,23 +228,53 @@ def check_stock(product: dict) -> tuple[bool | None, str]:
         if kw in html:
             return False, f"在庫なし（キーワード: {kw}）"
 
-    # JSON-LD の availability を解析
     try:
-        soup = BeautifulSoup(html, "html.parser")
-        for tag in soup.find_all("script", {"type": "application/ld+json"}):
-            data = json.loads(tag.string or "{}")
-            offers = data.get("offers", {})
-            if isinstance(offers, list):
-                offers = offers[0] if offers else {}
-            avail = offers.get("availability", "")
-            if "InStock" in avail:
-                return True, f"在庫あり（JSON-LD: {avail}）"
-            if "OutOfStock" in avail:
-                return False, f"在庫なし（JSON-LD: {avail}）"
-    except Exception:
-        pass
+        result = _parse_jsonld_availability(html)
+        if result is True:
+            return True, "在庫あり（JSON-LD）"
+        if result is False:
+            return False, "在庫なし（JSON-LD）"
+    except Exception as e:
+        return None, f"JSON-LD 解析エラー: {e}"
 
     return None, "判定不能（ページ構造が変更された可能性あり）"
+
+
+def check_stock(product: dict) -> tuple[bool | None, str]:
+    """
+    Returns:
+        (True, reason)  : 在庫あり
+        (False, reason) : 在庫なし
+        (None, reason)  : 判定不能 / エラー
+
+    判定不能の場合は 5 秒後に 1 回リトライする。
+    """
+    import time
+
+    # 404 は在庫なし（リトライ不要）
+    html, err = _fetch_html(product)
+    if html is None:
+        if "404" in err:
+            return False, err
+        # 接続エラー / 非200 → リトライ
+        time.sleep(5)
+        html, err = _fetch_html(product)
+        if html is None:
+            return None, f"{err}（リトライ後も失敗）"
+
+    result, reason = _judge_html(html)
+
+    # 判定不能 → 5 秒後に再取得してリトライ
+    if result is None:
+        time.sleep(5)
+        html2, err2 = _fetch_html(product)
+        if html2 is not None:
+            result2, reason2 = _judge_html(html2)
+            if result2 is not None:
+                return result2, f"{reason2}（リトライで判定）"
+        return None, reason
+
+    return result, reason
 
 
 # ============================================================
