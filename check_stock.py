@@ -48,24 +48,24 @@ PRODUCTS = [
     },
     # ── iPhone 16 Pro 256GB ──────────────────────────────────
     {
-        "id": "FYMW3J",
+        "id": "FYN13J",
         "name": "iPhone 16 Pro 256GB - ホワイトチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMW3J/A",
+        "url": "https://www.apple.com/jp/xc/product/FYN13J/A",
     },
     {
-        "id": "FYMX3J",
+        "id": "FYN23J",
         "name": "iPhone 16 Pro 256GB - デザートチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMX3J/A",
+        "url": "https://www.apple.com/jp/xc/product/FYN23J/A",
     },
     {
-        "id": "FYMY3J",
+        "id": "FYN33J",
         "name": "iPhone 16 Pro 256GB - ナチュラルチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMY3J/A",
+        "url": "https://www.apple.com/jp/xc/product/FYN33J/A",
     },
     {
-        "id": "FYMV3J",
+        "id": "FYN03J",
         "name": "iPhone 16 Pro 256GB - ブラックチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMV3J/A",
+        "url": "https://www.apple.com/jp/xc/product/FYN03J/A",
     },
     # ── iPhone 16 Plus 128GB ─────────────────────────────────
     {
