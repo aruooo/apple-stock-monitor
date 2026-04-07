@@ -19,7 +19,7 @@
 | ナチュラルチタニウム | FYWK3J | https://www.apple.com/jp/xc/product/FYWK3J/A |
 | ブラックチタニウム | FYWG3J | https://www.apple.com/jp/xc/product/FYWG3J/A |
 
-### iPhone 16 Pro 128GB（SIMフリー）整備済製品
+### iPhone 16 Pro 256GB（SIMフリー）整備済製品
 
 | カラー | SKU | URL |
 |--------|-----|-----|
