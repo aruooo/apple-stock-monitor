@@ -212,6 +212,11 @@ def _fetch_html(product: dict) -> tuple[str | None, str]:
     if resp.status_code != 200:
         return None, f"HTTP {resp.status_code}"
 
+    # リダイレクトで別商品ページに飛んだ場合は誤検知の原因になるため検出する
+    # （例: 在庫切れ商品 → 整備済み製品一覧ページ → 他商品の「カートに入れる」を誤検知）
+    if product["id"] not in resp.url:
+        return None, f"リダイレクト先に商品ID({product['id']})が見つからない: {resp.url}"
+
     return resp.text, ""
 
 
@@ -249,10 +254,10 @@ def check_stock(product: dict) -> tuple[bool | None, str]:
     """
     import time
 
-    # 404 は在庫なし（リトライ不要）
+    # 404 / リダイレクト は在庫なし確定（リトライ不要）
     html, err = _fetch_html(product)
     if html is None:
-        if "404" in err:
+        if "404" in err or "リダイレクト" in err:
             return False, err
         # 接続エラー / 非200 → リトライ
         time.sleep(5)
