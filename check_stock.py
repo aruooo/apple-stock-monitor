@@ -3,7 +3,7 @@ Apple 整備済製品 在庫チェッカー
 ================================
 監視対象:
   - iPhone 16 Pro Max 256GB (SIMフリー) 整備済製品 4色
-  - iPhone 16 Pro 128GB (SIMフリー) 整備済製品 4色
+  - iPhone 16 Pro 256GB (SIMフリー) 整備済製品 4色
   - iPhone 16 Plus 128GB (SIMフリー) 整備済製品 4色
   - iPhone 16 128GB (SIMフリー) 整備済製品 4色
 通知方法: Discord Webhook
@@ -46,26 +46,26 @@ PRODUCTS = [
         "name": "iPhone 16 Pro Max 256GB - ブラックチタニウム（SIMフリー）[整備済製品]",
         "url": "https://www.apple.com/jp/xc/product/FYWG3J/A",
     },
-    # ── iPhone 16 Pro 128GB ──────────────────────────────────
+    # ── iPhone 16 Pro 256GB ──────────────────────────────────
     {
-        "id": "FYMW3J",
-        "name": "iPhone 16 Pro 128GB - ホワイトチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMW3J/A",
+        "id": "FYN13J",
+        "name": "iPhone 16 Pro 256GB - ホワイトチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYN13J/A",
     },
     {
-        "id": "FYMX3J",
-        "name": "iPhone 16 Pro 128GB - デザートチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMX3J/A",
+        "id": "FYN23J",
+        "name": "iPhone 16 Pro 256GB - デザートチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYN23J/A",
     },
     {
-        "id": "FYMY3J",
-        "name": "iPhone 16 Pro 128GB - ナチュラルチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMY3J/A",
+        "id": "FYN33J",
+        "name": "iPhone 16 Pro 256GB - ナチュラルチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYN33J/A",
     },
     {
-        "id": "FYMV3J",
-        "name": "iPhone 16 Pro 128GB - ブラックチタニウム（SIMフリー）[整備済製品]",
-        "url": "https://www.apple.com/jp/xc/product/FYMV3J/A",
+        "id": "FYN03J",
+        "name": "iPhone 16 Pro 256GB - ブラックチタニウム（SIMフリー）[整備済製品]",
+        "url": "https://www.apple.com/jp/xc/product/FYN03J/A",
     },
     # ── iPhone 16 Plus 128GB ─────────────────────────────────
     {

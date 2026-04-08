@@ -19,14 +19,14 @@
 | ナチュラルチタニウム | FYWK3J | https://www.apple.com/jp/xc/product/FYWK3J/A |
 | ブラックチタニウム | FYWG3J | https://www.apple.com/jp/xc/product/FYWG3J/A |
 
-### iPhone 16 Pro 128GB（SIMフリー）整備済製品
+### iPhone 16 Pro 256GB（SIMフリー）整備済製品
 
 | カラー | SKU | URL |
 |--------|-----|-----|
-| ホワイトチタニウム | FYMW3J | https://www.apple.com/jp/xc/product/FYMW3J/A |
-| デザートチタニウム | FYMX3J | https://www.apple.com/jp/xc/product/FYMX3J/A |
-| ナチュラルチタニウム | FYMY3J | https://www.apple.com/jp/xc/product/FYMY3J/A |
-| ブラックチタニウム | FYMV3J | https://www.apple.com/jp/xc/product/FYMV3J/A |
+| ホワイトチタニウム | FYN13J | https://www.apple.com/jp/xc/product/FYN13J/A |
+| デザートチタニウム | FYN23J | https://www.apple.com/jp/xc/product/FYN23J/A |
+| ナチュラルチタニウム | FYN33J | https://www.apple.com/jp/xc/product/FYN33J/A |
+| ブラックチタニウム | FYN03J | https://www.apple.com/jp/xc/product/FYN03J/A |
 
 ### iPhone 16 Plus 128GB（SIMフリー）整備済製品
 
