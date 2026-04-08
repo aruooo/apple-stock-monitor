@@ -149,24 +149,21 @@ def time_label() -> str:
 # 在庫チェック
 # ============================================================
 
-# 在庫あり判定キーワード（日本語 Apple ページ）
+# 在庫あり判定キーワード（日本語 Apple ページ・UI テキストのみ）
+# ※ JSON 文字列は誤検知の原因になるため除外。JSON-LD は専用パーサーで判定する。
 IN_STOCK_KEYWORDS = [
     "カートに入れる",
     "今すぐ購入",
     "ショッピングバッグに入れる",
     "add-to-cart",
-    '"availability":"InStock"',
-    '"availability": "InStock"',
 ]
 
-# 在庫なし判定キーワード
+# 在庫なし判定キーワード（UI テキストのみ）
 OUT_OF_STOCK_KEYWORDS = [
     "現在ご注文いただけません",
     "在庫がありません",
     "売り切れ",
     "このアイテムは現在ご利用いただけません",
-    '"availability":"OutOfStock"',
-    '"availability": "OutOfStock"',
 ]
 
 
@@ -220,13 +217,14 @@ def _fetch_html(product: dict) -> tuple[str | None, str]:
 
 def _judge_html(html: str) -> tuple[bool | None, str]:
     """HTML から在庫を判定する。"""
-    for kw in IN_STOCK_KEYWORDS:
-        if kw in html:
-            return True, f"在庫あり（キーワード: {kw}）"
-
+    # 在庫なしを先にチェック（確定的な否定シグナルを在庫ありより優先する）
     for kw in OUT_OF_STOCK_KEYWORDS:
         if kw in html:
             return False, f"在庫なし（キーワード: {kw}）"
+
+    for kw in IN_STOCK_KEYWORDS:
+        if kw in html:
+            return True, f"在庫あり（キーワード: {kw}）"
 
     try:
         result = _parse_jsonld_availability(html)
@@ -288,21 +286,26 @@ def send_discord_webhook(embeds: list) -> bool:
         print("⚠️  DISCORD_WEBHOOK_URL が未設定です")
         return False
 
-    payload = {
-        "username": "Apple 在庫モニター",
-        "embeds": embeds,
-    }
-    try:
-        r = requests.post(webhook_url, json=payload, timeout=10)
-        if r.ok:
-            print("✅ Discord 通知送信成功")
-            return True
-        else:
-            print(f"❌ Discord エラー: {r.status_code} {r.text}")
-            return False
-    except Exception as e:
-        print(f"❌ Discord 送信例外: {e}")
-        return False
+    # Discord は1リクエストあたり embed 最大 10 件のため分割送信
+    BATCH_SIZE = 10
+    success = True
+    for i in range(0, len(embeds), BATCH_SIZE):
+        batch = embeds[i:i + BATCH_SIZE]
+        payload = {
+            "username": "Apple 在庫モニター",
+            "embeds": batch,
+        }
+        try:
+            r = requests.post(webhook_url, json=payload, timeout=10)
+            if r.ok:
+                print(f"✅ Discord 通知送信成功 ({len(batch)} 件)")
+            else:
+                print(f"❌ Discord エラー: {r.status_code} {r.text}")
+                success = False
+        except Exception as e:
+            print(f"❌ Discord 送信例外: {e}")
+            success = False
+    return success
 
 
 # ============================================================
