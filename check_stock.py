@@ -201,23 +201,28 @@ def _parse_jsonld_availability(html: str) -> bool | None:
 
 
 def _fetch_html(product: dict) -> tuple[str | None, str]:
-    """HTTP GET して HTML を返す。失敗時は (None, エラー理由)。"""
+    """HTTP GET して HTML を返す。失敗時は (None, エラー理由)。
+
+    リダイレクトは追跡しない。
+    整備済み品ページが在庫ありなら 200 を返す。
+    在庫なし・ページ廃止の場合は別 URL へリダイレクト（3xx）される。
+    リダイレクトを追跡すると新品販売ページの「今すぐ購入」を誤検知する。
+    """
     try:
-        resp = requests.get(product["url"], headers=HEADERS, timeout=15)
+        resp = requests.get(
+            product["url"], headers=HEADERS, timeout=15, allow_redirects=False
+        )
     except requests.RequestException as e:
         return None, f"接続エラー: {e}"
+
+    # 3xx リダイレクト → 整備済み品ページが存在しない = 在庫なし確定
+    if resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308):
+        return None, f"リダイレクト（{resp.status_code}）→ 在庫なし"
 
     if resp.status_code == 404:
         return None, "404 Not Found（ページ非公開）"
     if resp.status_code != 200:
         return None, f"HTTP {resp.status_code}"
-
-    # リダイレクトで別商品ページに飛んだ場合は誤検知の原因になるため検出する
-    # （例: 在庫切れ商品 → 整備済み製品一覧ページ → 他商品の「カートに入れる」を誤検知）
-    # ※ Apple は /xc/product/SKU → /shop/product/sku（小文字）へリダイレクトするため
-    #   大文字小文字を無視して比較する
-    if product["id"].lower() not in resp.url.lower():
-        return None, f"リダイレクト先に商品ID({product['id']})が見つからない: {resp.url}"
 
     return resp.text, ""
 
