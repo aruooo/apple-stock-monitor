@@ -214,7 +214,9 @@ def _fetch_html(product: dict) -> tuple[str | None, str]:
 
     # リダイレクトで別商品ページに飛んだ場合は誤検知の原因になるため検出する
     # （例: 在庫切れ商品 → 整備済み製品一覧ページ → 他商品の「カートに入れる」を誤検知）
-    if product["id"] not in resp.url:
+    # ※ Apple は /xc/product/SKU → /shop/product/sku（小文字）へリダイレクトするため
+    #   大文字小文字を無視して比較する
+    if product["id"].lower() not in resp.url.lower():
         return None, f"リダイレクト先に商品ID({product['id']})が見つからない: {resp.url}"
 
     return resp.text, ""
